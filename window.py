@@ -33,7 +33,7 @@ def getProducts(storeDomain, accessToken):
     csvfile = open("products.csv", "w")
     csvfile.write('\n'.join(result))
     csvfile.close()
-    log("Get products list")
+    log(f"Get {len(result)-1} products")
 
 
 def updateInventory(variantId, increaseType, amount):
