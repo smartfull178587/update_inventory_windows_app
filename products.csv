@@ -1,7 +1,7 @@
 id;title;description;price;compare_at_price;inventory_quiantity
-47404396609818;Product 1 (Black / Big);This is product description 1.;300.00;None;2;
-47406387527962;Product 1 (Black / Small);This is product description 1.;300.00;None;2;
-47404396642586;Product 1 (Red / Big);This is product description 1.;300.00;None;2;
+47404396609818;Product 1 (Black / Big);This is product description 1.;1.00;None;22;
+47406387527962;Product 1 (Black / Small);This is product description 1.;300.00;None;12;
+47404396642586;Product 1 (Red / Big);This is product description 1.;300.00;None;0;
 47406387560730;Product 1 (Red / Small);This is product description 1.;300.00;None;2;
-47404408275226;Product 2 (White);This is product description 2.;500.00;None;2;
+47404408275226;Product 2 (White);This is product description 2.;500.00;None;0;
 47404408307994;Product 2 (Blue);This is product description 2.;500.00;None;2;
