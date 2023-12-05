@@ -1,5 +1,11 @@
 import requests
 import configparser
+from datetime import datetime
+
+
+def log(message):
+    logFile = open("history.log", "a")
+    logFile.write(f'[{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}] : {message}\n')
 
 
 def getConfig(filename):
@@ -27,6 +33,7 @@ def getProducts(storeDomain, accessToken):
     csvfile = open("products.csv", "w")
     csvfile.write('\n'.join(result))
     csvfile.close()
+    log("Get products list")
 
 
 def updateInventory(variantId, increaseType, amount):
