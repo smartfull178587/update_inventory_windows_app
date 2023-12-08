@@ -1,4 +1,37 @@
-[2023-12-05 07:24:09] : Get 6 products
-[2023-12-05 07:24:31] : Update inventory quantity of 47404396609818: from 42 to 22
-[2023-12-05 08:27:53] : Get 6 products
-[2023-12-05 10:06:55] : Get 6 products
+[2023-12-07 10:47:12] : python window.py products.csv : success
+[2023-12-07 11:17:41] : python window.py products.csv : success
+[2023-12-07 11:19:12] : python window.py products.csv : success
+[2023-12-07 11:21:37] : python window.py products.csv : success
+[2023-12-07 11:21:54] : python window.py products.csv : success
+[2023-12-07 11:22:07] : python window.py products.csv : success
+[2023-12-07 11:29:10] : python window.py products.csv : success
+[2023-12-07 11:29:52] : python window.py products.csv : success
+[2023-12-07 11:33:13] : python window.py products.csv : success
+[2023-12-07 11:34:39] : python window.py products.csv : success
+[2023-12-07 11:39:36] : python window.py products.csv : success
+[2023-12-07 11:41:11] : python window.py products.csv : success
+[2023-12-07 11:41:23] : python window.py products.csv : success
+[2023-12-07 11:41:32] : python window.py products.csv : success
+[2023-12-07 12:35:20] : python window.py products.csv : success
+[2023-12-07 12:35:54] : python window.py products.csv : success
+[2023-12-07 12:38:12] : python window.py products.csv : success
+[2023-12-07 12:39:06] : python window.py products.csv : success
+[2023-12-07 12:51:30] : python window.py products.csv : success
+[2023-12-07 12:55:29] : python window.py products.csv : success
+[2023-12-07 12:57:20] : python window.py products.csv : success
+[2023-12-07 12:57:33] : python window.py products.csv : success
+[2023-12-07 14:16:54] : python window.py product.csv : success
+[2023-12-08 01:32:52] : python window.py product.csv : success
+[2023-12-08 01:40:54] : python window.py product.csv : success
+[2023-12-08 01:41:03] : python window.py product.csv : success
+[2023-12-08 02:38:54] : python window.py product.csv : success
+[2023-12-08 02:40:23] : python window.py product.csv : success
+[2023-12-08 02:46:12] : python window.py 43898776060066 10 : failed
+[2023-12-08 02:46:16] : python window.py product.csv : success
+[2023-12-08 02:46:36] : python window.py 47679344673105 10 : success
+[2023-12-08 02:46:40] : python window.py product.csv : success
+[2023-12-08 02:46:54] : python window.py 47679344673105 +10 : success
+[2023-12-08 02:46:58] : python window.py product.csv : success
+[2023-12-08 02:47:15] : python window.py product.csv : success
+[2023-12-08 02:54:35] : python window.py 47679344673105 -10 : success
+[2023-12-08 02:54:40] : python window.py product.csv : success

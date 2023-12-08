@@ -1,8 +1,17 @@
+import sys
 import os
-import requests
-import configparser
+import subprocess
 from datetime import datetime
 import time
+
+try:
+    import requests
+    import configparser
+except:
+    subprocess.check_call(['pip', 'install', 'requests'])
+    subprocess.check_call(['pip', 'install', 'configparser'])
+    import requests
+    import configparser
 
 
 def log(message):
@@ -21,88 +30,107 @@ def getConfig(filename):
 def getLocationId(storeDomain, accessToken):
     response = requests.get(f'https://{storeDomain}.myshopify.com/admin/api/2023-10/locations.json', headers={'X-Shopify-Access-Token': accessToken})
     if response.status_code != 200:
-        print(response.text)
         return
     return response.json()['locations'][0]['id']
 
 
-def getProducts(storeDomain, accessToken):
-    result = ['id;title;description;price;compare_at_price;inventory_quiantity']
-    response = requests.get(f'https://{storeDomain}.myshopify.com/admin/api/2023-10/products.json', headers={'X-Shopify-Access-Token': accessToken})
-    if response.status_code != 200:
-        print(response.text)
-        return
-    products = response.json()['products']
-    for product in products:
-        for variant in product.get('variants', []):
-            row = f"{str(variant.get('id', ''))};"
-            row += f"{str(product.get('title', ''))} ({str(variant.get('title', ''))});"
-            row += f"{str(product.get('body_html', ''))};"
-            row += f"{str(variant.get('price', ''))};"
-            row += f"{str(variant.get('compare_at_price', '') )};"
-            row += f"{str(variant.get('inventory_quantity', ''))};"
-            result.append(row)
-    csvfile = open("products.csv", "w")
-    csvfile.write('\n'.join(result))
+def getProducts(storeDomain, accessToken, filename):
+    csvfile = open(filename, "w")
+    since_id = 0
+    result = ['id;Handle;Title;Body (HTML);Vendor;Product Category;Type;Tags;Published;Option1 Name;Option1 Value;Option2 Name;Option2 Value;Option3 Name;Option3 Value;Variant SKU;Variant Weight;Variant Weight Unit;Variant Inventory Policy;Variant Inventory Quantity;Variant Fulfillment Service;Variant Price;Variant Compare At Price;Variant Requires Shipping;Variant Taxable;Variant Barcode;Image Src;']
+    while True:
+        response = requests.get(f'https://{storeDomain}.myshopify.com/admin/api/2023-10/products.json?since_id={since_id}', headers={'X-Shopify-Access-Token': accessToken})
+        old_since_id = since_id
+        if response.status_code != 200:
+            return False
+        products = response.json()['products']
+        for product in products:
+            optionName = ['', '', '']
+            i = 0
+            for option in product.get('options', []):
+                optionName[i] = option.get('name', '')
+                i += 1
+            for variant in product.get('variants', []):
+                row = f"{str(variant.get('id', ''))};"
+                row += f"{str(product.get('handle', ''))};"
+                row += f"{str(product.get('title', ''))} ({str(variant.get('title', ''))});"
+                row += f"{str(product.get('body_html', ''))};"
+                row += f"{str(product.get('vendor', ''))};"
+                row += f"{str(product.get('tags', ''))};"
+                row += f"{str(product.get('product_type', ''))};"
+                row += f"{str(product.get('tags', ''))};"
+                row += f"{str(product.get('status', ''))};"
+                row += f"{optionName[0]};"
+                row += f"{str(variant.get('option1', ''))};"
+                row += f"{optionName[1]};"
+                row += f"{str(variant.get('option2', ''))};"
+                row += f"{optionName[2]};"
+                row += f"{str(variant.get('option3', ''))};"
+                row += f"{str(variant.get('sku', ''))};"
+                row += f"{str(variant.get('weight', ''))};"
+                row += f"{str(variant.get('weight_unit', ''))};"
+                row += f"{str(variant.get('inventory_policy', ''))};"
+                row += f"{str(variant.get('inventory_quantity', ''))};"
+                row += f"{str(variant.get('fulfillment_service', ''))};"
+                row += f"{str(variant.get('price', ''))};"
+                row += f"{str(variant.get('compare_at_price', ''))};"
+                row += f"{str(variant.get('requires_shipping', ''))};"
+                row += f"{str(variant.get('taxable', ''))};"
+                row += f"{str(variant.get('barcode', ''))};"
+                image = product.get('image')
+                if image == None:
+                    row += ';'
+                else:
+                    row += f"{str(image.get('src', ''))};"
+                result.append(row)
+            since_id = product.get('id')
+        try:
+            csvfile.write('\n'.join(result))
+            result.clear()
+        except:
+            return False
+        if old_since_id == since_id:
+            break
     csvfile.close()
-    log(f"Get {len(result)-1} products")
+    return True
 
 
-def updateInventory(variantId, locationId, increaseType, amount, storeDomain, accessToken):
-    amount = int(amount)
+def updateInventory(variantId, locationId, isStatic, amount, storeDomain, accessToken):
     response = requests.get(f'https://{storeDomain}.myshopify.com/admin/api/2023-10/variants/{variantId}.json', headers={'X-Shopify-Access-Token': accessToken})
     if response.status_code != 200:
-        print(response.text)
-        return
+        return False
     oldInventory = response.json()['variant']['inventory_quantity']
-    if increaseType == 'd' or increaseType == 'D':
-        amount *= -1
-    newInventory = int(oldInventory) + int(amount)
-    if newInventory < 0:
-        print('Current inventory quantity is not enough')
-        return
+    if isStatic is not True:
+        amount = int(oldInventory) + amount
+    if amount < 0:
+        return False
     inventoryId = response.json()['variant']['inventory_item_id']
-    response = requests.post(f'https://{storeDomain}.myshopify.com/admin/api/2023-10/inventory_levels/set.json', headers={'X-Shopify-Access-Token': accessToken}, json={'location_id': locationId, 'inventory_item_id': inventoryId, 'available': newInventory})
-    if response.status_code != 200:
-        print(response.text)
-        return
+    response = requests.post(f'https://{storeDomain}.myshopify.com/admin/api/2023-10/inventory_levels/set.json', headers={'X-Shopify-Access-Token': accessToken}, json={'location_id': locationId, 'inventory_item_id': inventoryId, 'available': amount})
     if response.status_code == 200:
-        print(f'Updated successfully from {oldInventory} to {newInventory}')
-        log(f'Update inventory quantity of {variantId}: from {oldInventory} to {newInventory}')
+        return True
     else:
-        print('failed')
+        return False
 
 
 def main():
     iniFile = 'config.ini'
-    if os.path.isfile(iniFile) is not True:
-        iniFile = open(iniFile, "a")
-        iniFile.write('[OPTIONS]\nSTORE_DOMAIN = \nACCESS_TOKEN = ')
-        print('Please input the Store domain and token in ini file.')
-        time.sleep(3)
-        return
     storeDomain, accessToken = getConfig(iniFile)
     locationId = getLocationId(storeDomain, accessToken)
-    while(True):
-        print("Will you get products list or set the inventory of product or quit?(g/s/q): ")
-        execType = input()
-        if execType == 'g' or execType == 'G':
-            getProducts(storeDomain, accessToken)
-        elif execType == 's' or execType == 'S':
-            print("Please input the product id that you want to update: ")
-            variantId = input()
-            print("Will you increase or decrease the inventory?(i/d): ")
-            increaseType = input()
-            if increaseType != 'i' and increaseType != 'd' and increaseType != 'I' and increaseType != 'D':
-                print("Wrong input!")
-                continue
-            print("Please input the amount: ")
-            amount = input()
-            updateInventory(variantId, locationId, increaseType, amount, storeDomain, accessToken)
-        elif execType == 'q' or execType == 'Q':
-            return
+    if len(sys.argv) == 2:
+        filename = sys.argv[1]
+        result = getProducts(storeDomain, accessToken, filename)
+        if result:
+            log(f'python {sys.argv[0]} {sys.argv[1]} : success')
         else:
-            print("Wrong input!")
+            log(f'python {sys.argv[0]} {sys.argv[1]} : failed')
+    elif len(sys.argv) == 3:
+        variantId = int(sys.argv[1])
+        amount = int(sys.argv[2])
+        result = updateInventory(variantId, locationId, (str(amount) == str(sys.argv[2]) and amount > 0) or str(sys.argv[2]) == '0', amount, storeDomain, accessToken)
+        if result:
+            log(f'python {sys.argv[0]} {sys.argv[1]} {sys.argv[2]} : success')
+        else:
+            log(f'python {sys.argv[0]} {sys.argv[1]} {sys.argv[2]} : failed')
 
 
 if __name__ == '__main__':
